@@ -1,4 +1,5 @@
 <h1 align="center">Hi 👋, I'm Nikita</h1>
+<h2 align="center">I'm 16 y.o</h2>
 <h3 align="center">Full-stack developer from Russia</h3>
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=flamesone&label=Profile%20views&color=0e75b6&style=flat" alt="flamesone" /> </p>
