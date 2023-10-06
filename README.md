@@ -6,7 +6,7 @@
 
 - 🔭 I’m currently working on **Flute**
 
-- 🌱 I’m currently learning **React want to learn Golang**
+- 🌱 I’m currently learning **React want to learn C++**
 
 - 💬 Ask me about **php, react**
 
