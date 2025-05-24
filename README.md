@@ -3,13 +3,11 @@
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=flamesone&label=Profile%20views&color=0e75b6&style=flat" alt="flamesone" /> </p>
 
-- 🔭 I’m currently working on [Flute](https://github.com/Flute-CMS/cms)
+- 🔭 I’m currently working on [Flute](https://flute-cms.com)
 
 - 🌱 I’m currently learning **Music and a little new frameworks**
 
 - 📫 How to reach me **xenozf@gmail.com, https://t.me/flamesina**
-
-- ⚡ Fun fact **I think I can speak on English**
 
 <h3 align="left">Connect with me:</h3>
 <p align="left">
