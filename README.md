@@ -43,13 +43,15 @@ Creator of **[Flute CMS](https://flute-cms.com)** — open-source CMS for gaming
 
 <div align="center">
 
-```
-Languages    Go · PHP · TypeScript · JavaScript
-Frontend     React · Next.js · Tailwind
-Backend      Node.js · Bun · REST
-Data         PostgreSQL · MySQL · Redis
-DevOps       Docker · Nginx · Linux · Git
-```
+<img src="https://skillicons.dev/icons?i=go,php,ts,js&theme=dark" alt="languages" />
+<br>
+<img src="https://skillicons.dev/icons?i=react,nextjs,tailwind,html,css&theme=dark" alt="frontend" />
+<br>
+<img src="https://skillicons.dev/icons?i=nodejs,bun&theme=dark" alt="backend" />
+<br>
+<img src="https://skillicons.dev/icons?i=postgres,mysql,redis&theme=dark" alt="data" />
+<br>
+<img src="https://skillicons.dev/icons?i=docker,nginx,linux,git&theme=dark" alt="devops" />
 
 </div>
 
