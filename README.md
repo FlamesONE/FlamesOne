@@ -20,7 +20,7 @@
 #### // about
 
 Building tools for gaming communities and web infrastructure.
-Creator of **[Flute CMS](https://flute-cms.com)** — open-source CMS for gaming communities with 100+ modules.
+Creator of **[Flute CMS](https://flute-cms.com)** — open-source CMS for gaming communities with 50+ modules.
 
 <br>
 
@@ -43,13 +43,13 @@ Creator of **[Flute CMS](https://flute-cms.com)** — open-source CMS for gaming
 
 <div align="center">
 
-| | |
-|---|---|
-| **Languages** | `Go` · `PHP` · `TypeScript` · `JavaScript` |
-| **Frontend** | `React` · `Next.js` · `Tailwind` |
-| **Backend** | `Node.js` · `Bun` · `REST` |
-| **Data** | `PostgreSQL` · `MySQL` · `Redis` |
-| **DevOps** | `Docker` · `Nginx` · `Linux` · `Git` |
+```
+Languages    Go · PHP · TypeScript · JavaScript
+Frontend     React · Next.js · Tailwind
+Backend      Node.js · Bun · REST
+Data         PostgreSQL · MySQL · Redis
+DevOps       Docker · Nginx · Linux · Git
+```
 
 </div>
 
