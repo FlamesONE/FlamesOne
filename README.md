@@ -34,6 +34,18 @@ Creator of **[Flute CMS](https://flute-cms.com)** — open-source CMS for gaming
     <img src="https://github-readme-stats.vercel.app/api/pin/?username=Flute-CMS&repo=cms&theme=default&bg_color=00000000&hide_border=true" />
   </picture>
 </a>
+<a href="https://github.com/FlamesONE/messenger-app">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/pin/?username=FlamesONE&repo=messenger-app&theme=github_dark&bg_color=00000000&hide_border=true&icon_color=58a6ff" />
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=FlamesONE&repo=messenger-app&theme=default&bg_color=00000000&hide_border=true" />
+  </picture>
+</a>
+<a href="https://github.com/FlamesONE/itd-project">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/pin/?username=FlamesONE&repo=itd-project&theme=github_dark&bg_color=00000000&hide_border=true&icon_color=58a6ff" />
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=FlamesONE&repo=itd-project&theme=default&bg_color=00000000&hide_border=true" />
+  </picture>
+</a>
 
 </div>
 
