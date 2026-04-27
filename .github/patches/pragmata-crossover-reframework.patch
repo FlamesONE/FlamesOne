@@ -67,7 +67,7 @@ index 0000000..f5941d4
 +          path: ${{ github.workspace }}/pragmata-crossover-reframework.zip
 +          if-no-files-found: error
 diff --git a/src/D3D12Hook.cpp b/src/D3D12Hook.cpp
-index f61d7c9..342434a 100644
+index f61d7c9..bef1478 100644
 --- a/src/D3D12Hook.cpp
 +++ b/src/D3D12Hook.cpp
 @@ -12,6 +12,8 @@
@@ -99,6 +99,30 @@ index f61d7c9..342434a 100644
          if (FAILED(d3d12_create_device(nullptr, feature_level, IID_PPV_ARGS(&device)))) {
              spdlog::error("Failed to create D3D12 Dummy device");
              return false;
+@@ -477,9 +483,11 @@ bool D3D12Hook::hook() {
+         }
+     }
+ 
+-    if (s_command_queue_offset == 0) {
++    if (s_command_queue_offset == 0 && !sdk::GameIdentity::get().is_pragmata()) {
+         spdlog::error("Failed to find command queue offset");
+         return false;
++    } else if (s_command_queue_offset == 0) {
++        spdlog::warn("Failed to find command queue offset; continuing without D3D12 overlay for PRAGMATA compatibility");
+     }
+ 
+     //utility::ThreadSuspender suspender{};
+@@ -618,7 +626,9 @@ HRESULT WINAPI D3D12Hook::present(IDXGISwapChain3* swap_chain, uint64_t sync_int
+         d3d12->m_device = temp_device.Get();
+     }
+ 
+-    if (d3d12->m_using_proton_swapchain) {
++    if (d3d12->s_command_queue_offset == 0) {
++        d3d12->m_command_queue = nullptr;
++    } else if (d3d12->m_using_proton_swapchain) {
+         const auto real_swapchain = *(uintptr_t*)((uintptr_t)swap_chain + d3d12->s_proton_swapchain_offset);
+         d3d12->m_command_queue = *(ID3D12CommandQueue**)(real_swapchain + d3d12->s_command_queue_offset);
+     } else {
 diff --git a/src/Main.cpp b/src/Main.cpp
 index 2d4c8d1..b39a950 100644
 --- a/src/Main.cpp
