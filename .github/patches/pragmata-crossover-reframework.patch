@@ -66,6 +66,38 @@ index 0000000..f5941d4
 +          name: pragmata-crossover-reframework
 +          path: ${{ github.workspace }}/pragmata-crossover-reframework.zip
 +          if-no-files-found: error
+diff --git a/shared/sdk/SDK.cpp b/shared/sdk/SDK.cpp
+index ee053df..f6e0542 100644
+--- a/shared/sdk/SDK.cpp
++++ b/shared/sdk/SDK.cpp
+@@ -4,6 +4,7 @@
+ #include "RETypes.hpp"
+ #include "REGlobals.hpp"
+ #include "ResourceManager.hpp"
++#include "GameIdentity.hpp"
+ 
+ #include "SDK.hpp"
+ 
+@@ -17,6 +18,12 @@ void initialize_sdk() {
+     spdlog::info("REFramework SDK: https://github.com/praydog/REFramework");
+ 
+     reframework::get_types();
++
++    if (sdk::GameIdentity::get().is_pragmata()) {
++        spdlog::info("Skipping REGlobals/add_ref/resource initialization for PRAGMATA CrossOver compatibility");
++        return;
++    }
++
+     reframework::get_globals();
+ 
+     REManagedObject::resolve_add_ref();
+@@ -24,4 +31,4 @@ void initialize_sdk() {
+ 
+     sdk::ResourceManager::update_pointers();
+ }
+-}
+\ No newline at end of file
++}
 diff --git a/src/D3D12Hook.cpp b/src/D3D12Hook.cpp
 index f61d7c9..bef1478 100644
 --- a/src/D3D12Hook.cpp
@@ -209,7 +241,7 @@ index e8509d4..f338bad 100644
      }
  
 diff --git a/src/REFramework.cpp b/src/REFramework.cpp
-index 6712820..e0185ed 100644
+index 6712820..24d262a 100644
 --- a/src/REFramework.cpp
 +++ b/src/REFramework.cpp
 @@ -206,6 +206,38 @@ using LdrRegisterDllNotification_t = NTSTATUS (*) (
@@ -349,4 +381,28 @@ index 6712820..e0185ed 100644
 +        if (loader != nullptr && loader->is_enabled()) {
              loader->hook();
          }
+     }
+@@ -986,6 +1027,23 @@ void REFramework::on_frame_d3d12() {
+     }
+ 
+     if (command_queue == nullptr) {
++        if (sdk::GameIdentity::get().is_pragmata()) {
++            const bool is_init_ok = m_error.empty() && m_game_data_initialized;
++
++            if (is_init_ok) {
++                if (!std::exchange(m_created_default_cfg, true)) {
++                    if (!fs::exists({utility::widen(get_persistent_dir(REFrameworkConfig::REFRAMEWORK_CONFIG_NAME.data()).string())})) {
++                        save_config();
++                    }
++                }
++
++                first_frame_initialize();
++                call_on_frame();
++            }
++
++            return;
++        }
++
+         spdlog::error("Null Command Queue");
+         return;
      }
