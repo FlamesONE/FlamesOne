@@ -55,6 +55,20 @@ index f61d7c9..bef1478 100644
          const auto real_swapchain = *(uintptr_t*)((uintptr_t)swap_chain + d3d12->s_proton_swapchain_offset);
          d3d12->m_command_queue = *(ID3D12CommandQueue**)(real_swapchain + d3d12->s_command_queue_offset);
      } else {
+diff --git a/src/ExceptionHandler.cpp b/src/ExceptionHandler.cpp
+index 428ff61..6bd97e5 100644
+--- a/src/ExceptionHandler.cpp
++++ b/src/ExceptionHandler.cpp
+@@ -139,5 +139,9 @@ LONG WINAPI reframework::global_exception_handler(struct _EXCEPTION_POINTERS* ei
+ }
+ 
+ void reframework::setup_exception_handler() {
++    if (sdk::GameIdentity::get().is_pragmata()) {
++        return;
++    }
++
+     SetUnhandledExceptionFilter(global_exception_handler);
+ }
 diff --git a/src/Main.cpp b/src/Main.cpp
 index 2d4c8d1..b39a950 100644
 --- a/src/Main.cpp
@@ -335,10 +349,29 @@ index 6712820..ddf5e15 100644
              if (gi.tdb_ver() >= 71) {
                  const auto start_time = std::chrono::high_resolution_clock::now();
 diff --git a/src/mods/Hooks.cpp b/src/mods/Hooks.cpp
-index 84f26b6..f80a52d 100644
+index 84f26b6..0559c0a 100644
 --- a/src/mods/Hooks.cpp
 +++ b/src/mods/Hooks.cpp
-@@ -477,6 +477,13 @@ std::optional<std::string> Hooks::hook_all_application_entries() {
+@@ -31,6 +31,18 @@ std::optional<std::string> Hooks::on_initialize() {
+         return "Unable to get module size";
+     }
+ 
++    if (sdk::GameIdentity::get().is_pragmata()) {
++        spdlog::info("[Hooks] PRAGMATA CrossOver minimal hook path");
++
++        if (auto result = hook_all_application_entries(); result) {
++            return result;
++        }
++
++        spdlog::info("[Hooks] Finished PRAGMATA minimal hooking");
++
++        return Mod::on_initialize();
++    }
++
+     for (auto hook : m_hook_list) {
+         spdlog::info("[Hooks] Entering hook...");
+ 
+@@ -477,6 +489,13 @@ std::optional<std::string> Hooks::hook_all_application_entries() {
              continue;
          }
  
