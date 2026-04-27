@@ -1,35 +1,3 @@
-diff --git a/shared/sdk/SDK.cpp b/shared/sdk/SDK.cpp
-index ee053df..f6e0542 100644
---- a/shared/sdk/SDK.cpp
-+++ b/shared/sdk/SDK.cpp
-@@ -4,6 +4,7 @@
- #include "RETypes.hpp"
- #include "REGlobals.hpp"
- #include "ResourceManager.hpp"
-+#include "GameIdentity.hpp"
- 
- #include "SDK.hpp"
- 
-@@ -17,6 +18,12 @@ void initialize_sdk() {
-     spdlog::info("REFramework SDK: https://github.com/praydog/REFramework");
- 
-     reframework::get_types();
-+
-+    if (sdk::GameIdentity::get().is_pragmata()) {
-+        spdlog::info("Skipping REGlobals/add_ref/resource initialization for PRAGMATA CrossOver compatibility");
-+        return;
-+    }
-+
-     reframework::get_globals();
- 
-     REManagedObject::resolve_add_ref();
-@@ -24,4 +31,4 @@ void initialize_sdk() {
- 
-     sdk::ResourceManager::update_pointers();
- }
--}
-\ No newline at end of file
-+}
 diff --git a/src/D3D12Hook.cpp b/src/D3D12Hook.cpp
 index f61d7c9..bef1478 100644
 --- a/src/D3D12Hook.cpp
@@ -173,10 +141,18 @@ index e8509d4..f338bad 100644
      }
  
 diff --git a/src/REFramework.cpp b/src/REFramework.cpp
-index 6712820..24d262a 100644
+index 6712820..ddf5e15 100644
 --- a/src/REFramework.cpp
 +++ b/src/REFramework.cpp
-@@ -206,6 +206,38 @@ using LdrRegisterDllNotification_t = NTSTATUS (*) (
+@@ -37,6 +37,7 @@ extern "C" {
+ #include "mods/PluginLoader.hpp"
+ #include "mods/VR.hpp"
+ #include "sdk/REGlobals.hpp"
++#include "sdk/RETypes.hpp"
+ #include "sdk/Application.hpp"
+ #include "sdk/SDK.hpp"
+ #include <sdk/GameIdentity.hpp>
+@@ -206,6 +207,38 @@ using LdrRegisterDllNotification_t = NTSTATUS (*) (
  std::optional<std::filesystem::path> g_current_game_path{};
  bool g_success_made_ldr_notification{false};
  
@@ -215,7 +191,7 @@ index 6712820..24d262a 100644
  void CALLBACK ldr_notification_callback(
      ULONG                       NotificationReason,
      PLDR_DLL_NOTIFICATION_DATA NotificationData,
-@@ -235,7 +267,7 @@ try {
+@@ -235,7 +268,7 @@ try {
              if (full_dll_path.parent_path() == *g_current_game_path) {
                  spdlog::info("LdrRegisterDllNotification: DLL loaded from game directory: {}", utility::narrow(full_dll_name));
  
@@ -224,7 +200,7 @@ index 6712820..24d262a 100644
                      utility::spoof_module_paths_in_exe_dir();
                  }
              }
-@@ -295,7 +327,9 @@ REFramework::REFramework(HMODULE reframework_module)
+@@ -295,7 +328,9 @@ REFramework::REFramework(HMODULE reframework_module)
      const auto pre_allocated_buffer = (uintptr_t)AllocateBuffer((LPVOID)halfway_module); // minhook function
      spdlog::info("Preallocated buffer: {:x}", pre_allocated_buffer);
  
@@ -235,7 +211,7 @@ index 6712820..24d262a 100644
  
      IMGUI_CHECKVERSION();
      ImGui::CreateContext();
-@@ -345,7 +379,7 @@ REFramework::REFramework(HMODULE reframework_module)
+@@ -345,7 +380,7 @@ REFramework::REFramework(HMODULE reframework_module)
          }
  
          // Do this at least once before setting up our callback.
@@ -244,7 +220,7 @@ index 6712820..24d262a 100644
              // Pre-emptively copy all DLL files in the current game directory into our _storage_ directory.
              if (g_current_game_path.has_value()) {
                  const auto dest_path = *g_current_game_path / "_storage_";
-@@ -468,7 +502,7 @@ REFramework::REFramework(HMODULE reframework_module)
+@@ -468,7 +503,7 @@ REFramework::REFramework(HMODULE reframework_module)
          spdlog::info("D3D12 loaded");
      }
  
@@ -253,7 +229,7 @@ index 6712820..24d262a 100644
          utility::load_module_from_current_directory(L"openvr_api.dll");
          utility::load_module_from_current_directory(L"openxr_loader.dll");
          LoadLibraryA("dxgi.dll");
-@@ -479,9 +513,11 @@ REFramework::REFramework(HMODULE reframework_module)
+@@ -479,9 +514,11 @@ REFramework::REFramework(HMODULE reframework_module)
          }
      }
  
@@ -267,7 +243,7 @@ index 6712820..24d262a 100644
          FaultyFileDetector::early_init();
      }
  
-@@ -514,7 +550,7 @@ REFramework::REFramework(HMODULE reframework_module)
+@@ -514,7 +551,7 @@ REFramework::REFramework(HMODULE reframework_module)
      }
  
  
@@ -276,7 +252,7 @@ index 6712820..24d262a 100644
          utility::ThreadSuspender suspender{};
          IntegrityCheckBypass::ignore_application_entries();
  
-@@ -574,10 +610,11 @@ REFramework::REFramework(HMODULE reframework_module)
+@@ -574,10 +611,11 @@ REFramework::REFramework(HMODULE reframework_module)
      bool renderer_has_render_frame_fn = false;
  
      if (sdk::RETypeDB::get() != nullptr) {
@@ -291,7 +267,7 @@ index 6712820..24d262a 100644
          if (has_faulty_file_detector) {
              FaultyFileDetector::get(); // Initialize early
          }
-@@ -585,15 +622,19 @@ REFramework::REFramework(HMODULE reframework_module)
+@@ -585,15 +623,19 @@ REFramework::REFramework(HMODULE reframework_module)
          const auto config_path = get_persistent_dir(REFrameworkConfig::REFRAMEWORK_CONFIG_NAME.data()).string();
          if (fs::exists(utility::widen(config_path))) {
              utility::Config cfg{ config_path };
@@ -314,7 +290,7 @@ index 6712820..24d262a 100644
              loader->hook();
          }
      }
-@@ -986,6 +1027,23 @@ void REFramework::on_frame_d3d12() {
+@@ -986,6 +1028,23 @@ void REFramework::on_frame_d3d12() {
      }
  
      if (command_queue == nullptr) {
@@ -338,3 +314,17 @@ index 6712820..24d262a 100644
          spdlog::error("Null Command Queue");
          return;
      }
+@@ -2068,7 +2127,12 @@ bool REFramework::initialize_game_data() {
+                     utility::spoof_module_paths_in_exe_dir();
+                 }
+             }
+-            reframework::initialize_sdk();
++            if (gi.is_pragmata()) {
++                spdlog::info("Initializing PRAGMATA CrossOver minimal SDK");
++                reframework::get_types();
++            } else {
++                reframework::initialize_sdk();
++            }
+ 
+             if (gi.tdb_ver() >= 71) {
+                 const auto start_time = std::chrono::high_resolution_clock::now();
