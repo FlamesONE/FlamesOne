@@ -69,15 +69,21 @@ index 2d4c8d1..b39a950 100644
                  utility::spoof_module_paths_in_exe_dir();
              }
 diff --git a/src/Mods.cpp b/src/Mods.cpp
-index e8509d4..f338bad 100644
+index e8509d4..7bd0b4e 100644
 --- a/src/Mods.cpp
 +++ b/src/Mods.cpp
-@@ -24,31 +24,39 @@
+@@ -24,31 +24,45 @@
  #include "Mods.hpp"
  
  Mods::Mods() {
 +    const auto& gi = sdk::GameIdentity::get();
 +    const bool minimal_pragmata_crossover = gi.is_pragmata();
++
++    if (minimal_pragmata_crossover) {
++        m_mods.emplace_back(Hooks::get());
++        m_mods.emplace_back(Graphics::get());
++        return;
++    }
 +
      m_mods.emplace_back(BackBufferRenderer::get());
      m_mods.emplace_back(REFrameworkConfig::get());
@@ -120,7 +126,7 @@ index e8509d4..f338bad 100644
          if (!gi.is_re8() && (gi.is_re2() || gi.is_re3())) {
              m_mods.emplace_back(FirstPerson::get());
          }
-@@ -59,15 +67,16 @@ Mods::Mods() {
+@@ -59,15 +73,16 @@ Mods::Mods() {
      m_mods.emplace_back(Graphics::get());
  
      {
