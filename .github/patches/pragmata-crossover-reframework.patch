@@ -1,7 +1,7 @@
 From 1cc0fb79148feb1b3e930ed8e2f5330bf91de23a Mon Sep 17 00:00:00 2001
 From: FlamesONE <xenozf@gmail.com>
 Date: Mon, 27 Apr 2026 12:16:55 +0500
-Subject: [PATCH 1/2] Patch PRAGMATA CrossOver ultrawide startup
+Subject: [PATCH 1/3] Patch PRAGMATA CrossOver ultrawide startup
 
 ---
  src/Main.cpp        |  2 +-
@@ -209,6 +209,134 @@ index 6712820..4e4597a 100644
              loader->hook();
          }
      }
+-- 
+2.52.0
+
+
+From 2b48e0e4c5714ade093a72bc51100de8794014cf Mon Sep 17 00:00:00 2001
+From: FlamesONE <xenozf@gmail.com>
+Date: Mon, 27 Apr 2026 12:41:43 +0500
+Subject: [PATCH 2/3] Add PRAGMATA CrossOver build workflow
+
+---
+ .../workflows/build-pragmata-crossover.yml    | 62 +++++++++++++++++++
+ 1 file changed, 62 insertions(+)
+ create mode 100644 .github/workflows/build-pragmata-crossover.yml
+
+diff --git a/.github/workflows/build-pragmata-crossover.yml b/.github/workflows/build-pragmata-crossover.yml
+new file mode 100644
+index 0000000..f5941d4
+--- /dev/null
++++ b/.github/workflows/build-pragmata-crossover.yml
+@@ -0,0 +1,62 @@
++name: Build PRAGMATA CrossOver REFramework
++
++on:
++  workflow_dispatch:
++
++env:
++  BUILD_TYPE: Release
++
++jobs:
++  build:
++    runs-on: windows-2022
++
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++        with:
++          submodules: recursive
++          fetch-depth: 0
++
++      - name: Configure CMake
++        run: >
++          cmake -S "${{ github.workspace }}"
++          -B "${{ github.workspace }}/build"
++          -G "Visual Studio 17 2022"
++          -A x64
++          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
++          -DDEVELOPER_MODE=ON
++          "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
++
++      - name: Build REFramework
++        run: cmake --build "${{ github.workspace }}/build" --config "${{ env.BUILD_TYPE }}" --target REFramework
++
++      - name: Package PRAGMATA artifact
++        shell: pwsh
++        run: |
++          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/artifact"
++          Copy-Item "${{ github.workspace }}/build/bin/REFramework/dinput8.dll" "${{ github.workspace }}/artifact/dinput8.dll"
++          "${{ github.sha }}" | Out-File -Encoding ascii "${{ github.workspace }}/artifact/reframework_revision.txt"
++          @"
++          Graphics_UltrawideFix=true
++          Graphics_UltrawideFixVerticalFOV_V2=true
++          Graphics_UltrawideCustomFOV=false
++          Graphics_UltrawideFOVMultiplier_V2=1.000000
++          Graphics_UltrawideConstrainUI=false
++          Graphics_UltrawideConstrainChildUI=false
++          LooseFileLoader_Enabled=false
++          LooseFileLoader_LogAccessedFiles=false
++          LooseFileLoader_LogLooseFiles=false
++          FaultyFileDetector_Enabled=false
++          IntegrityCheckBypass_LoadPakDirectory=false
++          REFrameworkConfig_MenuKey_V2=45
++          REFrameworkConfig_MenuOpen=false
++          REFrameworkConfig_RememberMenuState=true
++          "@ | Out-File -Encoding ascii "${{ github.workspace }}/artifact/re2_fw_config.txt"
++          Compress-Archive -Force -Path "${{ github.workspace }}/artifact/*" -DestinationPath "${{ github.workspace }}/pragmata-crossover-reframework.zip"
++
++      - name: Upload artifact
++        uses: actions/upload-artifact@v4
++        with:
++          name: pragmata-crossover-reframework
++          path: ${{ github.workspace }}/pragmata-crossover-reframework.zip
++          if-no-files-found: error
+-- 
+2.52.0
+
+
+From eddef4a30b79dccc37120d5f7fea1eac7771c217 Mon Sep 17 00:00:00 2001
+From: FlamesONE <xenozf@gmail.com>
+Date: Mon, 27 Apr 2026 13:08:43 +0500
+Subject: [PATCH 3/3] Keep PRAGMATA D3D12CreateDevice hook active
+
+---
+ src/D3D12Hook.cpp | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/D3D12Hook.cpp b/src/D3D12Hook.cpp
+index f61d7c9..342434a 100644
+--- a/src/D3D12Hook.cpp
++++ b/src/D3D12Hook.cpp
+@@ -12,6 +12,8 @@
+ #include <utility/Scan.hpp>
+ #include <utility/ScopeGuard.hpp>
+ 
++#include <sdk/GameIdentity.hpp>
++
+ #include "REFramework.hpp"
+ 
+ #include "WindowFilter.hpp"
+@@ -212,7 +214,7 @@ bool D3D12Hook::hook() {
+     // Temporarily unhook D3D12CreateDevice
+     // it allows compatibility with ReShade and other overlays that hook it
+     // this is just a dummy device anyways, we don't want the other overlays to be able to use it
+-    if (original_bytes) {
++    if (original_bytes && !sdk::GameIdentity::get().is_pragmata()) {
+         spdlog::info("D3D12CreateDevice appears to be hooked, temporarily unhooking");
+ 
+         std::vector<uint8_t> hooked_bytes(original_bytes->size());
+@@ -230,6 +232,10 @@ bool D3D12Hook::hook() {
+         spdlog::info("Restoring hooked bytes for D3D12CreateDevice");
+         memcpy(d3d12_create_device, hooked_bytes.data(), hooked_bytes.size());
+     } else { // D3D12CreateDevice is not hooked
++        if (original_bytes) {
++            spdlog::info("D3D12CreateDevice appears to be hooked, keeping hook active for PRAGMATA compatibility");
++        }
++
+         if (FAILED(d3d12_create_device(nullptr, feature_level, IID_PPV_ARGS(&device)))) {
+             spdlog::error("Failed to create D3D12 Dummy device");
+             return false;
 -- 
 2.52.0
 
