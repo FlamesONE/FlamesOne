@@ -7,6 +7,9 @@ on:
       - .github/patches/pragmata-crossover-reframework.patch
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-2022
@@ -71,3 +74,14 @@ jobs:
           name: pragmata-crossover-reframework
           path: pragmata-crossover-reframework.zip
           if-no-files-found: error
+
+      - name: Commit PRAGMATA artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE/pragmata-builds"
+          Copy-Item "$env:GITHUB_WORKSPACE/pragmata-crossover-reframework.zip" "$env:GITHUB_WORKSPACE/pragmata-builds/pragmata-crossover-reframework.zip"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pragmata-builds/pragmata-crossover-reframework.zip
+          git commit -m "Update PRAGMATA CrossOver REFramework artifact" || exit 0
+          git push
