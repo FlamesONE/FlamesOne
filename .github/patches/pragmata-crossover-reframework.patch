@@ -161,7 +161,7 @@ index e8509d4..7bd0b4e 100644
      }
  
 diff --git a/src/REFramework.cpp b/src/REFramework.cpp
-index 6712820..0d47593 100644
+index 6712820..067eb88 100644
 --- a/src/REFramework.cpp
 +++ b/src/REFramework.cpp
 @@ -37,6 +37,7 @@ extern "C" {
@@ -350,7 +350,44 @@ index 6712820..0d47593 100644
          spdlog::error("Null Command Queue");
          return;
      }
-@@ -2068,7 +2136,12 @@ bool REFramework::initialize_game_data() {
+@@ -1156,6 +1224,11 @@ void REFramework::on_reset() {
+ 
+     spdlog::info("Reset!");
+ 
++    if (sdk::GameIdentity::get().is_pragmata()) {
++        spdlog::info("Skipping D3D reset for PRAGMATA CrossOver compatibility");
++        return;
++    }
++
+     if (m_initialized) {
+         // fixes text boxes not being able to receive input
+         //imgui::reset_keystates();
+@@ -2008,6 +2081,24 @@ bool REFramework::initialize() {
+ 
+         m_wnd = swap_desc.OutputWindow;
+ 
++        if (sdk::GameIdentity::get().is_pragmata()) {
++            spdlog::info("Skipping D3D12 ImGui/device initialization for PRAGMATA CrossOver compatibility");
++
++            initialize_windows_message_hook();
++
++            if (m_first_frame) {
++                m_dinput_hook = std::make_unique<DInputHook>(m_wnd);
++            } else {
++                m_dinput_hook->set_window(m_wnd);
++            }
++
++            if (m_first_frame) {
++                m_first_frame = false;
++                initialize_game_data();
++            }
++
++            return true;
++        }
+ 
+         IMGUI_CHECKVERSION();
+         ImGui::CreateContext();
+@@ -2068,7 +2159,12 @@ bool REFramework::initialize_game_data() {
                      utility::spoof_module_paths_in_exe_dir();
                  }
              }
