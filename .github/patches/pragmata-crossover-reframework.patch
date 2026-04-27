@@ -334,3 +334,28 @@ index 6712820..ddf5e15 100644
  
              if (gi.tdb_ver() >= 71) {
                  const auto start_time = std::chrono::high_resolution_clock::now();
+diff --git a/src/mods/Hooks.cpp b/src/mods/Hooks.cpp
+index 84f26b6..f80a52d 100644
+--- a/src/mods/Hooks.cpp
++++ b/src/mods/Hooks.cpp
+@@ -477,6 +477,13 @@ std::optional<std::string> Hooks::hook_all_application_entries() {
+             continue;
+         }
+ 
++        if (sdk::GameIdentity::get().is_pragmata()) {
++            const std::string_view description{entry->get_description()};
++            if (description != "UpdateBehavior" && description != "LockScene" && description != "UnlockScene") {
++                continue;
++            }
++        }
++
+         /*if (bad_funcs.find(func) != bad_funcs.end()) {
+             spdlog::warn("Duplicate function: {}", entry->description);
+             continue;
+@@ -1076,4 +1083,4 @@ Matrix4x4f* Hooks::camera_get_view_matrix_hook_internal(REManagedObject* camera,
+ 
+ Matrix4x4f* Hooks::camera_get_view_matrix_hook(REManagedObject* camera, Matrix4x4f* result) {
+     return g_hook->camera_get_view_matrix_hook_internal(camera, result);
+-}
+\ No newline at end of file
++}
